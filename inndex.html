@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeadlineDost – Dashboard</title>
+<meta name="description" content="An AI agent that finds your academic deadlines, ranks them and reminds you before you miss them.">
+<style>
+:root{--forest:#0f3d33;--forest2:#164e42;--cream:#f4f2eb;--panel:#e6ebe6;--card:#fff;--lime:#d9f26b;--ink:#1c2b27;--mute:#5d6f69;--red:#c9343b;--amber:#b36b00;--green:#1f7a4f;--blue:#2a5fc4;--line:#d5ddd8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;line-height:1.4}
+h1,h2{font-family:Cambria,Georgia,"Times New Roman",serif;color:var(--forest);margin:0}
+header{max-width:1100px;margin:0 auto;padding:28px 20px 8px}
+header h1{font-size:2.1rem}
+header p{margin:4px 0 0;color:var(--mute)}
+main{max-width:1100px;margin:0 auto;padding:12px 20px 40px;display:grid;grid-template-columns:1.25fr 1fr;gap:22px;align-items:start}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+.hero{background:var(--forest);color:#fff;border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.hero small{display:block;color:var(--lime);font-weight:600;font-size:.8rem;margin-bottom:8px}
+.hero b{font-size:1.5rem}
+.hero .left{min-width:0}.hero .left b{overflow-wrap:anywhere}
+.hero .cd{color:var(--lime);font-weight:700;font-size:1.25rem;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.stat{background:var(--card);border:2px solid transparent;border-radius:12px;padding:12px;text-align:left;font:inherit;color:var(--mute);cursor:pointer}
+.stat b{font-size:1.4rem;margin-right:4px}
+.stat.on{border-color:var(--forest)}
+.s-over b{color:var(--red)}.s-today b{color:var(--amber)}.s-up b{color:var(--blue)}.s-done b{color:var(--green)}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{background:var(--card);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px solid transparent}
+.row.sel{border-color:var(--forest2)}
+.badge{flex:none;width:30px;height:30px;border-radius:50%;color:#fff;font-weight:700;font-size:.8rem;display:grid;place-items:center}
+.b-r{background:var(--red)}.b-a{background:var(--amber)}.b-g{background:var(--green)}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .t span{font-size:.78rem;color:var(--mute)}
+.row .st{font-weight:600;font-size:.85rem;white-space:nowrap}
+.st.r{color:var(--red)}.st.a{color:var(--amber)}.st.g{color:var(--green)}.st.m{color:var(--mute)}
+.row.done .t b{text-decoration:line-through;color:var(--mute)}
+.ic{border:0;background:#eef2ef;border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--mute);font-size:.9rem}
+.ic:hover{background:var(--forest);color:#fff}
+.empty{background:var(--card);border-radius:12px;padding:18px;text-align:center;color:var(--mute)}
+.foot{font-size:.8rem;color:var(--mute);margin:10px 2px 0;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.foot button{background:none;border:0;color:var(--forest);text-decoration:underline;cursor:pointer;font:inherit}
+h2{font-size:1.15rem;margin-bottom:10px}
+.side{display:flex;flex-direction:column;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+textarea,input,select{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:92px;resize:vertical}
+.btn{background:var(--forest);color:#fff;border:0;border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--forest2)}
+.btn.sec{background:#e3e9e5;color:var(--forest)}
+.actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.form label{font-size:.78rem;color:var(--mute);display:block;margin-bottom:3px}
+.form .full{grid-column:1/-1}
+.note{font-size:.8rem;color:var(--amber);margin-top:8px}
+.rem{background:var(--forest);color:#fff;border-radius:18px;padding:16px 18px}
+.rem .top{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;margin-bottom:10px}
+.rem .top svg{flex:none}
+.rem .lang{margin-left:auto;display:flex;gap:4px}
+.rem .lang button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:2px 9px;cursor:pointer;font-size:.78rem}
+.rem .lang button.on{background:var(--lime);color:var(--forest);border-color:var(--lime)}
+.rem p{margin:0;font-size:1.02rem}
+.hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>DeadlineDost</h1>
+  <p>An AI agent that finds your academic deadlines, ranks them and reminds you before you miss them.</p>
+</header>
+
+<main>
+  <section>
+    <div class="panel">
+      <div class="hero" id="hero"></div>
+      <div class="stats" id="stats"></div>
+      <div class="list" id="list"></div>
+    </div>
+    <div class="foot"><span>Sample data shown first. Tasks you add are saved in this browser.</span><button id="reset">Reset sample data</button></div>
+  </section>
+
+  <section class="side">
+    <div class="card">
+      <h2>Paste a message, get the deadline</h2>
+      <textarea id="msg" placeholder="e.g. Hi all, DBMS Assignment 2 (20 marks) is due tomorrow 5 pm. Submit on Classroom."></textarea>
+      <div class="actions">
+        <button class="btn" id="extract">Extract</button>
+        <button class="btn sec" id="example">Try an example</button>
+      </div>
+      <div id="preview" class="hide">
+        <div class="form">
+          <div class="full"><label>Task</label><input id="f-title"></div>
+          <div><label>Subject</label><input id="f-subject"></div>
+          <div><label>Type</label>
+            <select id="f-type">
+              <option value="assignment">Assignment</option><option value="quiz">Quiz</option><option value="exam">Exam</option>
+              <option value="project">Project</option><option value="lab">Lab</option><option value="ppt">Presentation</option>
+              <option value="report">Report</option><option value="other">Other</option>
+            </select></div>
+          <div class="full"><label>Due</label><input id="f-due" type="datetime-local"></div>
+          <div><label>Marks (optional)</label><input id="f-marks" type="number" min="0" step="any"></div>
+          <div><label>Effort (hours)</label><input id="f-effort" type="number" min="0.5" step="0.5"></div>
+        </div>
+        <div class="note hide" id="note"></div>
+        <div class="actions"><button class="btn" id="add">Add task</button><button class="btn sec" id="cancel">Cancel</button></div>
+      </div>
+    </div>
+
+    <div class="rem">
+      <div class="top">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#d9f26b"><path d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
+        <span id="rem-label">Reminder</span>
+        <div class="lang"><button data-l="en" class="on">English</button><button data-l="hi">Hinglish</button></div>
+      </div>
+      <p id="rem-text"></p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- config ---------- */
+const KEY = 'deadlinedost.tasks.v1';
+const TYPES = {
+  exam:{imp:100,eff:8}, project:{imp:80,eff:10}, assignment:{imp:60,eff:4}, quiz:{imp:55,eff:2},
+  lab:{imp:50,eff:3}, ppt:{imp:50,eff:4}, report:{imp:55,eff:4}, other:{imp:40,eff:2}
+};
+const KW = [
+  ['exam', /\b(end ?sem|mid ?sem|midterm|exam|viva|test)\b/i],
+  ['project', /\bproject\b/i],
+  ['assignment', /\b(assignment|homework|worksheet)\b/i],
+  ['quiz', /\bquiz\b/i],
+  ['lab', /\b(lab|practical|record)\b/i],
+  ['ppt', /\b(ppt|pptx|presentation|slides)\b/i],
+  ['report', /\b(report|essay)\b/i]
+];
+const STOP = new Set('the a an your our is are for of please reminder submit submission hi dear all on by in and to new next that this with has have be will at from'.split(' '));
+const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const MON_RE = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+const WDAYS = ['sun','mon','tue','wed','thu','fri','sat'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MON_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const sameDay = (a, b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+const fmtTime = d => { let h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return `${h}:${String(m).padStart(2,'0')} ${ap}`; };
+const fmtDate = d => `${DAY_NAMES[d.getDay()]}, ${d.getDate()} ${MON_NAMES[d.getMonth()]}`;
+const toLocalInput = ts => { const d = new Date(ts), p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+const effStr = h => (Math.round(h * 10) / 10) + 'h';
+
+/* ---------- message extraction (runs fully in the browser) ---------- */
+function parseDate(t, now) {
+  const base = new Date(now); base.setHours(0,0,0,0);
+  const add = n => { const d = new Date(base); d.setDate(d.getDate() + n); return d; };
+  const mk = (y, mo, d) => {
+    let explicit = y != null;
+    if (!explicit) y = base.getFullYear();
+    if (y < 100) y += 2000;
+    let c = new Date(y, mo, d);
+    if (!explicit && c < add(-30)) c = new Date(y + 1, mo, d);
+    return c;
+  };
+  let m;
+  if ((m = t.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/))) {
+    let d = +m[1], mo = +m[2];
+    if (mo > 12 && d <= 12) [d, mo] = [mo, d];
+    if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) return mk(m[3] ? +m[3] : null, mo - 1, d);
+  }
+  if ((m = t.match(new RegExp('\\b(\\d{1,2})(?:st|nd|rd|th)?\\s*(?:of\\s+)?' + MON_RE + '\\b'))))
+    return mk(null, MONTHS.indexOf(m[2].slice(0,3)), +m[1]);
+  if ((m = t.match(new RegExp('\\b' + MON_RE + '\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b'))))
+    return mk(null, MONTHS.indexOf(m[1].slice(0,3)), +m[2]);
+  if (/day after tomorrow|\bparsoon?\b/.test(t)) return add(2);
+  if (/\b(tomorrow|tmrw|tmr|kal)\b/.test(t)) return add(1);
+  if (/\b(today|aaj|tonight)\b/.test(t)) return add(0);
+  if ((m = t.match(/\bin (\d+) days?\b/))) return add(+m[1]);
+  if ((m = t.match(/\b(next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tues?|wed|thu|thurs|fri|sat)\b/))) {
+    const idx = WDAYS.indexOf(m[2].slice(0,3));
+    let diff = (idx - base.getDay() + 7) % 7;
+    if (diff === 0) diff = 7;
+    return add(diff);
+  }
+  if (/\bnext week\b/.test(t)) return add(7);
+  return null;
+}
+function parseTime(t) {
+  let m;
+  if (/\bnoon\b/.test(t)) return [12, 0];
+  if (/\bmidnight\b/.test(t)) return [23, 59];
+  if ((m = t.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/))) { let h = (+m[1]) % 12; if (m[3] === 'pm') h += 12; return [h, +(m[2] || 0)]; }
+  if ((m = t.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/))) return [+m[1], +m[2]];
+  if ((m = t.match(/\b(\d{1,2})\s*baje\b/))) { let h = +m[1]; if (h >= 1 && h <= 6) h += 12; return [h % 24, 0]; }
+  return null;
+}
+function prettyWord(w) { return w === w.toLowerCase() ? (w.length <= 3 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)) : w; }
+function extract(text, now = new Date()) {
+  const t = text.toLowerCase();
+  let type = 'other', km = null;
+  for (const [k, re] of KW) { const m = text.match(re); if (m) { type = k; km = m; break; } }
+  const known = (text.match(/\b(dbms|os|cn|dsa|oops?|ai|ml|toc|coa|se|daa|maths?|physics|chemistry|english)\b/i) || [])[1];
+  let title, subject = 'General';
+  if (km) {
+    const before = text.slice(0, km.index).split(/\s+/).filter(Boolean), words = [];
+    for (let i = before.length - 1; i >= 0 && words.length < 3; i--) {
+      if (!/^[A-Za-z&]+$/.test(before[i]) || STOP.has(before[i].toLowerCase())) break;
+      words.unshift(prettyWord(before[i]));
+    }
+    const kw = type === 'ppt' && /^ppt/i.test(km[0]) ? 'PPT' : km[0].split(' ').map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const num = text.slice(km.index + km[0].length).match(/^\s*(?:no\.?\s*)?(\d{1,2})\b(?![\/:\-]|\s*(?:am|pm|marks?))/i);
+    title = [...words, kw, num ? num[1] : ''].filter(Boolean).join(' ');
+    subject = words.join(' ') || (known ? prettyWord(known) : 'General');
+  } else {
+    title = text.trim().split(/[.\n]/)[0].slice(0, 50) || 'New task';
+    if (known) subject = prettyWord(known);
+  }
+  const mk = t.match(/(\d+(?:\.\d+)?)\s*(?:marks?|pts?|points)\b/) || t.match(/marks?\s*[:\-]?\s*(\d+(?:\.\d+)?)/);
+  const ef = t.match(/(\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hours?)\b/);
+  let date = parseDate(t, now), time = parseTime(t), dateFound = !!date;
+  let due;
+  if (date) {
+    due = new Date(date); const [h, mi] = time || [23, 59]; due.setHours(h, mi, 0, 0);
+  } else if (time) {
+    due = new Date(now); due.setHours(time[0], time[1], 0, 0); if (due < now) due.setDate(due.getDate() + 1);
+  } else {
+    due = new Date(now); due.setDate(due.getDate() + 1); due.setHours(23, 59, 0, 0);
+  }
+  return { title, subject, type, due: due.getTime(), marks: mk ? +mk[1] : '', effort: ef ? +ef[1] : TYPES[type].eff, dateFound: dateFound || !!time };
+}
+
+/* ---------- priority score: 50% urgency + 30% importance + 20% effort ---------- */
+function hoursLeft(t, now = Date.now()) { return (t.due - now) / 3600000; }
+function score(t, now = Date.now()) {
+  const h = hoursLeft(t, now);
+  const urgency = h <= 0 ? 100 : Math.max(5, 100 - 100 * h / 168);
+  const typeImp = TYPES[t.type] ? TYPES[t.type].imp : 40;
+  const importance = t.marks !== '' && t.marks != null ? 0.5 * typeImp + 0.5 * Math.min(100, t.marks * 5) : typeImp;
+  const effort = Math.min(100, (t.effort / 8) * 100);
+  let s = Math.round(0.5 * urgency + 0.3 * importance + 0.2 * effort);
+  if (!t.done && h <= 0) s = Math.max(s, 90);       // overdue stays Critical
+  return Math.min(100, s);
+}
+function bucket(t, now = new Date()) {
+  if (t.done) return 'done';
+  if (t.due < now.getTime()) return 'overdue';
+  if (sameDay(new Date(t.due), now)) return 'today';
+  return 'upcoming';
+}
+function countdown(t, now = Date.now()) {
+  const ms = t.due - now, a = Math.abs(ms), m = Math.floor(a / 60000), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  const s = d >= 2 ? `${d}d ${h % 24}h` : h >= 1 ? `${h}h ${m % 60}m` : `${m}m`;
+  return ms < 0 ? `Overdue by ${s}` : `${s} left`;
+}
+function statusLabel(t, now = new Date()) {
+  const b = bucket(t, now), d = new Date(t.due);
+  if (b === 'done') return ['Done', 'g'];
+  if (b === 'overdue') return ['Overdue', 'r'];
+  if (b === 'today') return ['Due today', 'r'];
+  const tm = new Date(now); tm.setDate(tm.getDate() + 1);
+  if (sameDay(d, tm)) return ['Tomorrow', 'a'];
+  return [fmtDate(d), 'm'];
+}
+
+/* ---------- reminder text (English / Hinglish) ---------- */
+function reminder(t, lang, nowD = new Date()) {
+  const d = new Date(t.due), b = bucket(t, nowD), h = hoursLeft(t, nowD.getTime());
+  const name = `${t.title} (${t.subject})`, tm = fmtTime(d), eff = effStr(t.effort);
+  const startNow = h <= t.effort * 2;
+  const startBy = new Date(t.due - t.effort * 2 * 3600000);
+  const startTxt = sameDay(startBy, nowD) ? fmtTime(startBy) : fmtDate(startBy);
+  const tmr = new Date(nowD); tmr.setDate(tmr.getDate() + 1);
+  const isTmr = sameDay(d, tmr);
+  if (lang === 'hi') {
+    if (b === 'done') return `${name} complete ho chuka hai. Shabash!`;
+    if (b === 'overdue') return `Overdue ho gaya: ${name} ki deadline ${fmtDate(d)}, ${tm} thi. Jaldi se submit kar do.`;
+    const when = b === 'today' ? `Aaj due hai: ${name}, ${tm} tak.` : isTmr ? `Kal due hai: ${name}, ${tm} tak.` : `Aane wali deadline: ${name}, ${fmtDate(d)} ko ${tm} tak.`;
+    return `${when} Isme lagbhag ${eff} lagenge, ${startNow ? 'abhi start kar do.' : startTxt + ' tak shuru kar lena.'}`;
+  }
+  if (b === 'done') return `${name} is done. Nice work!`;
+  if (b === 'overdue') return `Overdue: ${name} was due ${fmtDate(d)} at ${tm}. Submit it as soon as you can.`;
+  const when = b === 'today' ? `Due today: ${name} at ${tm}.` : isTmr ? `Due tomorrow: ${name} at ${tm}.` : `Coming up: ${name} on ${fmtDate(d)} at ${tm}.`;
+  return `${when} It needs about ${eff}, ${startNow ? 'so start now.' : 'so plan to start by ' + startTxt + '.'}`;
+}
+
+/* ---------- storage ---------- */
+function seed() {
+  const n = new Date();
+  const at = (d, h, m) => { const x = new Date(n); x.setDate(x.getDate() + d); x.setHours(h, m, 0, 0); return x.getTime(); };
+  return [
+    { id: uid(), title: 'Communication Skills PPT', subject: 'Communication Skills', type: 'ppt', due: at(-1, 23, 59), marks: 10, effort: 4, done: false },
+    { id: uid(), title: 'OS Quiz', subject: 'OS', type: 'quiz', due: n.getTime() + (4 * 60 + 12) * 60000, marks: 10, effort: 2, done: false },
+    { id: uid(), title: 'DBMS Assignment 2', subject: 'DBMS', type: 'assignment', due: at(1, 17, 0), marks: 20, effort: 4, done: false },
+    { id: uid(), title: 'CN Lab Record', subject: 'CN', type: 'lab', due: at(3, 10, 0), marks: 15, effort: 3, done: false },
+    { id: uid(), title: 'DSA Mid Sem Exam', subject: 'DSA', type: 'exam', due: at(6, 9, 30), marks: 50, effort: 8, done: false },
+    { id: uid(), title: 'Maths Worksheet 4', subject: 'Maths', type: 'assignment', due: at(-2, 17, 0), marks: 5, effort: 2, done: true }
+  ];
+}
+function load() { try { const v = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(v)) return v; } catch (e) {} return seed(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch (e) {} }
+
+/* ---------- state + render ---------- */
+let tasks = load(), filter = null, selected = null, lang = 'en';
+
+function render() {
+  const nowD = new Date(), now = nowD.getTime();
+  const sc = new Map(tasks.map(t => [t.id, score(t, now)]));
+  const counts = { overdue: 0, today: 0, upcoming: 0, done: 0 };
+  tasks.forEach(t => counts[bucket(t, nowD)]++);
+
+  const active = tasks.filter(t => !t.done).sort((a, b) => sc.get(b.id) - sc.get(a.id));
+  const notOver = active.filter(t => bucket(t, nowD) !== 'overdue');
+  const top = notOver[0] || active[0];
+  $('#hero').innerHTML = top
+    ? `<div class="left"><small>Do this first</small><b>${esc(top.title)}</b></div><div class="cd">${esc(countdown(top, now))}</div>`
+    : `<div class="left"><small>Do this first</small><b>All clear. Nothing pending.</b></div>`;
+
+  const S = [['overdue','Overdue','s-over'],['today','Today','s-today'],['upcoming','Upcoming','s-up'],['done','Done','s-done']];
+  $('#stats').innerHTML = S.map(([k, l, c]) => `<button class="stat ${c} ${filter === k ? 'on' : ''}" data-f="${k}"><b>${counts[k]}</b>${l}</button>`).join('');
+
+  let shown = filter ? tasks.filter(t => bucket(t, nowD) === filter) : [...active, ...tasks.filter(t => t.done)];
+  if (filter) shown.sort((a, b) => sc.get(b.id) - sc.get(a.id));
+  if (!selected || !tasks.some(t => t.id === selected)) selected = (top || tasks[0] || {}).id;
+  $('#list').innerHTML = shown.length ? shown.map(t => {
+    const s = sc.get(t.id), [lab, cls] = statusLabel(t, nowD);
+    const bc = t.done ? 'b-g' : s >= 70 ? 'b-r' : s >= 50 ? 'b-a' : 'b-g';
+    return `<div class="row ${t.done ? 'done' : ''} ${t.id === selected ? 'sel' : ''}" data-id="${t.id}">
+      <div class="badge ${bc}">${t.done ? '✓' : s}</div>
+      <div class="t"><b>${esc(t.title)}</b><span>${esc(t.subject)}${t.marks !== '' && t.marks != null ? ' · ' + esc(t.marks) + ' marks' : ''} · ${esc(fmtTime(new Date(t.due)))}</span></div>
+      <div class="st ${cls}">${esc(lab)}</div>
+      <button class="ic" data-act="done" title="${t.done ? 'Mark as not done' : 'Mark as done'}">${t.done ? '↺' : '✓'}</button>
+      <button class="ic" data-act="del" title="Delete">✕</button></div>`;
+  }).join('') : `<div class="empty">No tasks here.</div>`;
+
+  const rt = tasks.find(t => t.id === selected);
+  $('#rem-label').textContent = rt ? 'Reminder · ' + rt.title : 'Reminder';
+  $('#rem-text').textContent = rt ? reminder(rt, lang, nowD) : 'Add a task and your reminder will show up here.';
+}
+
+/* ---------- events ---------- */
+$('#stats').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; filter = filter === b.dataset.f ? null : b.dataset.f; render(); });
+$('#list').addEventListener('click', e => {
+  const row = e.target.closest('.row'); if (!row) return;
+  const id = row.dataset.id, act = e.target.closest('[data-act]');
+  if (act && act.dataset.act === 'done') { const t = tasks.find(x => x.id === id); t.done = !t.done; save(); }
+  else if (act && act.dataset.act === 'del') { tasks = tasks.filter(x => x.id !== id); save(); }
+  else selected = id;
+  render();
+});
+document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => {
+  lang = b.dataset.l; document.querySelectorAll('.lang button').forEach(x => x.classList.toggle('on', x === b)); render();
+}));
+$('#reset').addEventListener('click', () => { tasks = seed(); filter = null; selected = null; save(); render(); });
+
+const EXAMPLES = [
+  'Hi all, DBMS Assignment 2 (20 marks) is due tomorrow 5 pm. Submit on Classroom.',
+  'Reminder: OS Quiz aaj shaam 6 baje, 10 marks. Syllabus: unit 3 and 4.',
+  'Communication Skills PPT submission by 28 Oct, 11:59 pm. 15 marks.',
+  'CN lab record next Friday 10:00 am, please bring the printed copy.'
+];
+let exIdx = 0;
+$('#example').addEventListener('click', () => { $('#msg').value = EXAMPLES[exIdx++ % EXAMPLES.length]; });
+$('#extract').addEventListener('click', () => {
+  const text = $('#msg').value.trim(); if (!text) { $('#msg').focus(); return; }
+  const r = extract(text);
+  $('#f-title').value = r.title; $('#f-subject').value = r.subject; $('#f-type').value = r.type;
+  $('#f-due').value = toLocalInput(r.due); $('#f-marks').value = r.marks; $('#f-effort').value = r.effort;
+  const note = $('#note');
+  note.textContent = r.dateFound ? '' : 'No date found in the message, so tomorrow 11:59 pm is filled in. Please check the due time.';
+  note.classList.toggle('hide', r.dateFound);
+  $('#preview').classList.remove('hide');
+});
+$('#cancel').addEventListener('click', () => $('#preview').classList.add('hide'));
+$('#add').addEventListener('click', () => {
+  const due = new Date($('#f-due').value).getTime();
+  if (!$('#f-title').value.trim() || isNaN(due)) { alert('Please add a task name and a valid due date.'); return; }
+  const marks = $('#f-marks').value;
+  const t = { id: uid(), title: $('#f-title').value.trim(), subject: $('#f-subject').value.trim() || 'General', type: $('#f-type').value,
+    due, marks: marks === '' ? '' : +marks, effort: Math.max(0.5, +$('#f-effort').value || 2), done: false };
+  tasks.push(t); selected = t.id; filter = null; save();
+  $('#msg').value = ''; $('#preview').classList.add('hide'); render();
+});
+
+render();
+setInterval(render, 30000);   // keeps countdowns and statuses live
+</script>
+</body>
+</html>
